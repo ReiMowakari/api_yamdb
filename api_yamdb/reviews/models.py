@@ -1,11 +1,12 @@
-from datetime import datetime
-
 from django.db import models
+
+from reviews.validations import validate_year
 
 
 class Category(models.Model):
     """Категории."""
 
+    # TODO: Возможно, стоит вынести name и связное с ним в миксин?..
     name = models.CharField(
         verbose_name='Наименование',
         max_length=256,
@@ -56,8 +57,7 @@ class Title(models.Model):
     )
     year = models.PositiveIntegerField(
         verbose_name='Год',
-        default=datetime.now().year
-        # Тут возможно стоит добавить валидатор? К примеру, 1600-наше время
+        validators=(validate_year,)
     )
     description = models.TextField(
         verbose_name='Описание',
