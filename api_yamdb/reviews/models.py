@@ -14,12 +14,14 @@ class Category(models.Model):
     )
     slug = models.SlugField(
         verbose_name='Код',
-        max_length='128',
+        max_length=128,
         unique=True
     )
 
     class Meta:
         ordering = ('name',)
+        verbose_name = 'категорию'  # ВП для админки
+        verbose_name_plural = 'Категории'
 
     def __str__(self) -> str:
         """Представление объекта в виде строки."""
@@ -42,6 +44,8 @@ class Genre(models.Model):
 
     class Meta:
         ordering = ('name', )
+        verbose_name = 'жанр'  # ВП для админки
+        verbose_name_plural = 'Жанры'
 
     def __str__(self) -> str:
         """Представление объекта в виде строки."""
@@ -78,6 +82,10 @@ class Title(models.Model):
         verbose_name='Жанр',
     )
 
+    class Meta:
+        verbose_name = 'произведение'  # ВП для админки
+        verbose_name_plural = 'Произведения'
+
 
 class GenreTitle(models.Model):
     """Промежуточная сущность между произведениями и жанрами."""
@@ -100,3 +108,5 @@ class GenreTitle(models.Model):
                 name='unique_genre_title'
             )
         ]
+        verbose_name = 'связь произведения и жанра'  # ВП для админки
+        verbose_name_plural = 'Связь произведения и жанра'
