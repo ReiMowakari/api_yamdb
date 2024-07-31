@@ -40,7 +40,7 @@ class CustomUser(AbstractUser):
     )
 
     class Meta:
-        verbose_name = 'пользователь'
+        verbose_name = 'пользователя'
         verbose_name_plural = 'Пользователи'
         ordering = ('username', '-date_joined')
         default_related_name = 'users'
