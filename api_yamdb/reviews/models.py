@@ -1,68 +1,65 @@
-from django.db import models
+from django.core import validators
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser, Group
+from django.db import models
 
 from reviews.validations import validate_year
 
+def get_default_role():
+    """Функция возвращает id роли user из модели Group."""
+    group, created = Group.objects.get_or_create(name='user')
+    return group.pk
 
-User = get_user_model()
 
+class CustomUser(AbstractUser):
+    """
+    Кастомная модель юзеров.
 
-class Review(models.Model):
-    """Модель для отзывов."""
+    Имеет one-to-many на модель Group для разаграничения доступа юзерам.
+    """
 
-    text = models.TextField('Содержимое отзыва')
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор')
-    score = models.PositiveSmallIntegerField(
-        'Оценка', default=1, validators=[
-            MinValueValidator(1, message='Оценка не может быть меньше 1'),
-            MaxValueValidator(10, message='Оценка не может быть больше 10')])
-    title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, verbose_name='Произведение')
-    pub_date = models.DateTimeField(
-        'Дата публикации',
-        auto_now_add=True
+    groups = None
+    role = models.ForeignKey(
+        Group,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name='роль',
+        max_length=16,
+        help_text='Роль пользователя, определяющая доступ к ресурсам проекта'
+    )
+    email = models.EmailField(
+        max_length=254,
+        verbose_name='Электронный адрес',
+        unique=True,
+        validators=[validators.validate_email]
+    )
+    confirmation_code = models.CharField(
+        'Код подтверждения', max_length=50, blank=True, null=True
+    )
+    bio = models.TextField(
+        blank=True, verbose_name='О себе',
     )
 
     class Meta:
-        verbose_name = 'отзыв'
-        verbose_name_plural = 'Отзывы'
-        default_related_name = 'reviews'
-        ordering = ['-pub_date']
-        # Ограничения на то, что можно оставить только один отзыв к произведению
-        # от одного автора, а также ограничение на проверку оценки в диапазоне от 1 до 10.
-        constraints = [
-            models.UniqueConstraint(fields=['title', 'author'],
-                                    name='unique_review_author_title'),
-        ]
+        verbose_name = 'пользователя'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username', '-date_joined')
+        default_related_name = 'users'
 
+    def save(self, *args, **kwargs):
+        self.clean()
+        if not self.role:
+            self.role = get_default_role()
+        super(CustomUser, self).save(*args, **kwargs)
 
-class Comment(models.Model):
-    """Модель для комментариев."""
-    text = models.TextField('Содержимое комментария')
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор')
-    review = models.ForeignKey(
-        Review,
-        on_delete=models.CASCADE,
-    )
-    pub_date = models.DateTimeField(
-        'Дата публикации',
-        auto_now_add=True
-    )
-
-    class Meta:
-        verbose_name = 'комментарий'
-        verbose_name_plural = 'Комментарии'
-        default_related_name = 'comments'
-        ordering = ['-pub_date']
-
+    def __str__(self):
+        return self.username
+    
         
 class Category(models.Model):
     """Категории."""
 
-    # TODO: Возможно, стоит вынести name и связное с ним в миксин?..
     name = models.CharField(
         verbose_name='Наименование',
         max_length=256,
@@ -170,3 +167,57 @@ class GenreTitle(models.Model):
         verbose_name = 'связь произведения и жанра'  # ВП для админки
         verbose_name_plural = 'Связь произведения и жанра'
         default_related_name = 'genre_titles'
+        
+       
+      
+ class Review(models.Model):
+    """Модель для отзывов."""
+
+    text = models.TextField('Содержимое отзыва')
+    author = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
+    score = models.PositiveSmallIntegerField(
+        'Оценка', default=1, validators=[
+            MinValueValidator(1, message='Оценка не может быть меньше 1'),
+            MaxValueValidator(10, message='Оценка не может быть больше 10')])
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, verbose_name='Произведение')
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True
+    )
+
+    class Meta:
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'Отзывы'
+        default_related_name = 'reviews'
+        ordering = ['-pub_date']
+        # Ограничения на то, что можно оставить только один отзыв к произведению
+        # от одного автора, а также ограничение на проверку оценки в диапазоне от 1 до 10.
+        constraints = [
+            models.UniqueConstraint(fields=['title', 'author'],
+                                    name='unique_review_author_title'),
+        ]
+
+
+class Comment(models.Model):
+    """Модель для комментариев."""
+    
+    text = models.TextField('Содержимое комментария')
+    author = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+    )
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True
+    )
+
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+        default_related_name = 'comments'
+        ordering = ['-pub_date']
+        

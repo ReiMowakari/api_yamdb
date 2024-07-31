@@ -104,6 +104,8 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
+AUTH_USER_MODEL = 'reviews.CustomUser'
+
 # Constants for models
 
 MIN_YEAR = 1600
