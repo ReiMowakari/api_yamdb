@@ -4,11 +4,13 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Review(models.Model):
     """Модель для отзывов."""
+
     text = models.TextField('Содержимое отзыва')
     #author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Автор')
-    score = models.IntegerField('Оценка', default=1, validators=[
-        MinValueValidator(1), MaxValueValidator(10)
-    ])
+    score = models.PositiveSmallIntegerField(
+        'Оценка', default=1, validators=[
+            MinValueValidator(1, message='Оценка не может быть меньше 1'),
+            MaxValueValidator(10, message='Оценка не может быть больше 10')])
     #title = models.ForeignKey(Title,on_delete=models.CASCADE, verbose_name='Произведение')
     pub_date = models.DateTimeField(
         'Дата публикации',
@@ -16,8 +18,8 @@ class Review(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Отзыв'
-        verbose_name_plural = 'Отзывы'
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'отзывы'
         default_related_name = 'reviews'
         ordering = ['-pub_date']
         # Ограничения на то, что можно оставить только один отзыв к произведению
@@ -44,7 +46,7 @@ class Comment(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'комментарии'
         default_related_name = 'comments'
         ordering = ['-pub_date']
