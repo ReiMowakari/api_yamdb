@@ -28,7 +28,7 @@ class CustomUser(AbstractUser):
         max_length=16,
         help_text='Роль пользователя, определяющая доступ к ресурсам проекта.'
     )
-    bio = models.TextField(blank=True, verbose_name='биография')
+    bio = models.TextField(blank=True, verbose_name='биография', max_length=256)
 
     class Meta:
         verbose_name = 'пользователь'
