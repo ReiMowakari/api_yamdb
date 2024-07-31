@@ -4,10 +4,14 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 class CustomUser(AbstractUser):
+    """Кастомная модель юзеров. Имеет one-to-many на модель Group
+    для разаграничения доступа юзерам.
+    """
     groups = None
 
     @staticmethod
     def get_default_role():
+        """Классовый метод возвращающий id роли user из модели Group."""
         try:
             return Group.objects.get(name='user').id
         except ObjectDoesNotExist:
