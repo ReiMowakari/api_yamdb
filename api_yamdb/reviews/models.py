@@ -22,6 +22,7 @@ class Category(models.Model):
         ordering = ('name',)
         verbose_name = 'категорию'  # ВП для админки
         verbose_name_plural = 'Категории'
+        default_related_name = 'categories'
 
     def __str__(self) -> str:
         """Представление объекта в виде строки."""
@@ -46,6 +47,7 @@ class Genre(models.Model):
         ordering = ('name', )
         verbose_name = 'жанр'  # ВП для админки
         verbose_name_plural = 'Жанры'
+        default_related_name = 'genres'
 
     def __str__(self) -> str:
         """Представление объекта в виде строки."""
@@ -85,6 +87,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'произведение'  # ВП для админки
         verbose_name_plural = 'Произведения'
+        default_related_name = 'titles'
 
 
 class GenreTitle(models.Model):
@@ -110,3 +113,4 @@ class GenreTitle(models.Model):
         ]
         verbose_name = 'связь произведения и жанра'  # ВП для админки
         verbose_name_plural = 'Связь произведения и жанра'
+        default_related_name = 'genre_titles'
