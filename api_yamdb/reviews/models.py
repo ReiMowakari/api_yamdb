@@ -5,6 +5,7 @@ from django.db import models
 
 from reviews.validations import validate_year
 
+
 def get_default_role():
     """Функция возвращает id роли user из модели Group."""
     group, created = Group.objects.get_or_create(name='user')
@@ -55,8 +56,8 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
-    
-        
+
+
 class Category(models.Model):
     """Категории."""
 
@@ -167,10 +168,9 @@ class GenreTitle(models.Model):
         verbose_name = 'связь произведения и жанра'  # ВП для админки
         verbose_name_plural = 'Связь произведения и жанра'
         default_related_name = 'genre_titles'
-        
-       
-      
- class Review(models.Model):
+
+
+class Review(models.Model):
     """Модель для отзывов."""
 
     text = models.TextField('Содержимое отзыва')
@@ -192,8 +192,9 @@ class GenreTitle(models.Model):
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
         ordering = ['-pub_date']
-        # Ограничения на то, что можно оставить только один отзыв к произведению
-        # от одного автора, а также ограничение на проверку оценки в диапазоне от 1 до 10.
+        # Ограничения на то, что можно оставить только один отзыв
+        # к произведению от одного автора, а также ограничение на проверку
+        # оценки в диапазоне от 1 до 10.
         constraints = [
             models.UniqueConstraint(fields=['title', 'author'],
                                     name='unique_review_author_title'),
@@ -202,7 +203,7 @@ class GenreTitle(models.Model):
 
 class Comment(models.Model):
     """Модель для комментариев."""
-    
+
     text = models.TextField('Содержимое комментария')
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
@@ -220,4 +221,3 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
         ordering = ['-pub_date']
-        
