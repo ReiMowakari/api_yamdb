@@ -1,6 +1,8 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
+from api.filters import TitleFilterSet
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -41,3 +43,14 @@ class GenreViewSet(
     queryset = Genre.objects.all()
     search_field = ('name', )
     serializer_class = GenreSerializer
+
+
+class TitleViewSet(
+    viewsets.ModelViewSet
+):
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = TitleFilterSet
+    pagination_class = LimitOffsetPagination
+    # TODO: perimission_classes = (..., )
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
