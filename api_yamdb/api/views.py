@@ -6,7 +6,8 @@ from api.filters import TitleFilterSet
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
-    TitleSerializer
+    TitleReadSerializer,
+    TitleViewSerializer,
 )
 from reviews.models import (
     Category,
@@ -53,4 +54,8 @@ class TitleViewSet(
     pagination_class = LimitOffsetPagination
     # TODO: perimission_classes = (..., )
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH'):
+            return TitleReadSerializer
+        return TitleViewSerializer
