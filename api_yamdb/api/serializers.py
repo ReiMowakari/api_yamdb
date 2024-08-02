@@ -43,7 +43,9 @@ class AdminUserSerializer(SelfUserRegistrationSerializer):
         required=True
     )
 
-    role = serializers.CharField()
+    role = serializers.SlugRelatedField(
+        slug_field='name', queryset=Group.objects.all()
+    )
 
     class Meta:
         model = CustomUser
@@ -53,6 +55,9 @@ class AdminUserSerializer(SelfUserRegistrationSerializer):
 
 
 class ObtainTokenSerializer(serializers.ModelSerializer):
+
+    username = serializers.CharField(required=True)
+
     class Meta:
         model = CustomUser
         fields = ('username', 'confirmation_code')

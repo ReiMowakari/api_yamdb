@@ -9,7 +9,7 @@ from reviews.validations import validate_year
 def get_default_role():
     """Функция возвращает id роли user из модели Group."""
     group, created = Group.objects.get_or_create(name='user')
-    return group.pk
+    return group
 
 
 class CustomUser(AbstractUser):
@@ -26,7 +26,6 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True,
         verbose_name='роль',
-        max_length=16,
         help_text='Роль пользователя, определяющая доступ к ресурсам проекта'
     )
     email = models.EmailField(
@@ -49,9 +48,10 @@ class CustomUser(AbstractUser):
         default_related_name = 'users'
 
     def save(self, *args, **kwargs):
-        self.clean()
         if not self.role:
             self.role = get_default_role()
+        else:
+            self.role = Group.objects.get(name=self.role)
         super(CustomUser, self).save(*args, **kwargs)
 
     def __str__(self):
