@@ -5,7 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.pagination import (
     PageNumberPagination, LimitOffsetPagination
 )
@@ -21,7 +21,7 @@ from reviews.models import (
 )
 from .filters import TitleFilterSet
 from .mixins import CreateDestroyListNSIMixin
-from .permissions import OnlyAdminAllowed, AccountOwnerOrManager
+from .permissions import OnlyAdminAllowed, AdminOrReadOnly, IsOwnerOrManagerOrReadOnly
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -85,19 +85,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         if request.method == 'PUT':
             raise MethodNotAllowed(method=request.method)
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.serializer_class(
-            instance, data=request.data, partial=partial
-        )
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        if user.role == settings.ADMIN_ROLE:
-            user.is_staff = True
-        else:
-            user.is_staff = False
-        user.save()
-        return Response(serializer.data)
+        return super().update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -113,7 +101,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     @action(detail=False,
             url_path='me',
             methods=['get', 'patch'],
-            permission_classes=(AccountOwnerOrManager,),
+            permission_classes=(IsAuthenticated,),
             serializer_class=GetOrPatchUserSerializer)
     def request_me(self, request):
         user = request.user
@@ -170,7 +158,7 @@ class TitleViewSet(
     filter_backends = (DjangoFilterBackend, )
     filterset_class = TitleFilterSet
     pagination_class = LimitOffsetPagination
-    # TODO: perimission_classes = (..., )
+    permission_classes = (AdminOrReadOnly,)
     queryset = Title.objects.all()
 
     def get_serializer_class(self):
@@ -181,7 +169,7 @@ class TitleViewSet(
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    # permission_classes = ()
+    permission_classes = (IsOwnerOrManagerOrReadOnly,)
 
     def get_review(self):
         """Получение объекта отзыва."""
@@ -201,7 +189,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    # permission_classes = ()
+    permission_classes = (IsOwnerOrManagerOrReadOnly,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')

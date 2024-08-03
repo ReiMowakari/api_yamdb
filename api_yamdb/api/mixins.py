@@ -4,6 +4,8 @@ from rest_framework.serializers import (
     StringRelatedField
 )
 
+from .permissions import AdminOrReadOnly
+
 
 class CreateDestroyListNSIMixin(
     mixins.CreateModelMixin,
@@ -20,7 +22,7 @@ class CreateDestroyListNSIMixin(
     filter_backends = (filters.SearchFilter, )
     lookup_field = 'slug'
     pagination_class = LimitOffsetPagination
-    # TODO: permission_classes = (..., )
+    permission_classes = (AdminOrReadOnly, )
     search_field = ('name', )
 
 

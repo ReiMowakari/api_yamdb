@@ -9,9 +9,10 @@ class OnlyAdminAllowed(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role == settings.ADMIN_ROLE
-            or request.user.is_authenticated
-            and request.user.is_staff is True
+            and (
+                request.user.role == settings.ADMIN_ROLE
+                or request.user.is_superuser is True
+            )
         )
 
 
@@ -24,25 +25,32 @@ class IsOwnerOrManagerOrReadOnly(BasePermission):
     методов.
     """
 
-    def has_permission(self, request, view):
+    def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return request.user.is_authenticated
-
-    def has_object_permission(self, request, view, obj):
         return (
-            obj.user == request.user
-            or request.user.role in settings.MANAGER_ROLES
+            request.user.is_authenticated
+            and (
+                obj.author == request.user
+                or request.user.role in settings.MANAGER_ROLES
+            )
         )
 
 
-class AccountOwnerOrManager(IsOwnerOrManagerOrReadOnly):
+class AdminOrReadOnly(BasePermission):
     """
-    Пермишен- наследник.
+    Пермишен для категорий, жанров, произведений.
 
-    Для любого метода требует аутентификацию, а также принадлежность объекта,
-    или одну из ролей: администратор, модератор, суперюзер.
+    Безопасные методы доступны любому пользователю. Остальные методы только для
+    Админа и суперпользователя.
     """
 
     def has_permission(self, request, view):
-        return request.user.is_authenticated
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return (
+            request.user.is_authenticated
+            and request.user.role == settings.ADMIN_ROLE
+            or request.user.is_authenticated
+            and request.user.is_staff is True
+        )
