@@ -43,11 +43,9 @@ class AdminUserSerializer(SelfUserRegistrationSerializer):
 
     username = serializers.CharField(
         validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-        required=True
     )
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-        required=True
     )
 
     role = serializers.ChoiceField(
