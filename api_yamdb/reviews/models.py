@@ -64,13 +64,13 @@ class Category(models.Model):
     )
     slug = models.SlugField(
         verbose_name='Код',
-        max_length=128,
+        max_length=50,
         unique=True
     )
 
     class Meta:
         ordering = ('name',)
-        verbose_name = 'категорию'  # ВП для админки
+        verbose_name = 'категорию'
         verbose_name_plural = 'Категории'
         default_related_name = 'categories'
 
@@ -84,18 +84,18 @@ class Genre(models.Model):
 
     name = models.CharField(
         verbose_name='Наименование',
-        max_length=256,  # Существуют такие жанры, длина которых > 100с
+        max_length=256,
         unique=True
     )
     slug = models.SlugField(
         verbose_name='Код',
-        max_length=128,
+        max_length=50,
         unique=True
     )
 
     class Meta:
         ordering = ('name', )
-        verbose_name = 'жанр'  # ВП для админки
+        verbose_name = 'жанр'
         verbose_name_plural = 'Жанры'
         default_related_name = 'genres'
 
@@ -117,7 +117,6 @@ class Title(models.Model):
     )
     description = models.TextField(
         verbose_name='Описание',
-        max_length=256,
         blank=True
     )
     # TODO: Перед сливом в master нужно убедиться, что есть rating
