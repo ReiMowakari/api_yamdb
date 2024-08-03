@@ -1,10 +1,12 @@
 from django.conf import settings
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 
 from reviews.models import CustomUser
 
 
 def validate_username_allowed(username):
+    """Валидатор проверяет предоставленный username на допустимость."""
     if username in settings.FORBIDDEN_USERNAMES:
         raise serializers.ValidationError(
             {
@@ -17,6 +19,12 @@ def validate_username_allowed(username):
 
 
 def validate_data_unique_together(username, email):
+    """
+    Валидатор проверяет предоставленные данные пользователем на корректность.
+
+    Предоставленные username и email должны совпадать в бд, или оба
+    отсутствовать в бд, иначе ошибка валидации.
+    """
     try:
         user = CustomUser.objects.get(username=username)
         if user.email != email:
@@ -31,15 +39,20 @@ def validate_data_unique_together(username, email):
 
 
 def validate_confirmation_code(username, confirmation_code):
+    """
+    Валидатор проверяет confirmation_code юзера.
+
+    Если код из запроса и код юзера не сопвпадают, вызывается ошибка валидации.
+    Если в бд нет юзера с переданным username, вызывается ошибка
+    NotFound - отсутствие объекта в бд.
+    """
     try:
         user = CustomUser.objects.get(username=username)
-        #  TODO Добавить проверку, что confirmation_code уже был получен?
-        #  То есть, есть ли значение в бд. Вроде не требуется по тз.
         if user.confirmation_code != confirmation_code:
             raise serializers.ValidationError(
                 {'confirmation_code': 'Неверный код подтверждения.'}
             )
     except CustomUser.DoesNotExist:
-        raise serializers.ValidationError(
+        raise NotFound(
             {'username': 'Такого пользователя не существует.'}
         )

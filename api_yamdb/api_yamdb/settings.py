@@ -123,6 +123,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 
 SIMPLE_JWT = {
@@ -133,3 +135,15 @@ SIMPLE_JWT = {
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 MAIL_SEND_FROM = 'balala@gmail.com'
+
+ADMIN_ROLE = 'admin'
+MODERATOR_ROLE = 'moderator'
+USER_ROLE = 'user'
+
+MANAGER_ROLES = (ADMIN_ROLE, MODERATOR_ROLE)
+
+AVAILABLE_ROLES = [
+    (ADMIN_ROLE, 'админ'),
+    (MODERATOR_ROLE, 'модератор'),
+    (USER_ROLE, 'обычный пользователь')
+]
