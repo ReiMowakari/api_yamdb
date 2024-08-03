@@ -8,28 +8,27 @@ from reviews.models import Comment, Review, Title
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    # permission_classes =
+    # permission_classes = ()
+
+    def get_review(self):
+        """Получение объекта отзыва."""
+        review = get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+            title_id=self.kwargs.get('title_id')
+        )
+        return review
 
     def get_queryset(self):
-        review = get_object_or_404(
-            Review,
-            pk=self.kwargs.get('review_id'),
-            title_id=self.kwargs.get('title_id')
-        )
-        return review.comments
+        return self.get_review().comments
 
     def perform_create(self, serializer):
-        review = get_object_or_404(
-            Review,
-            pk=self.kwargs.get('review_id'),
-            title_id=self.kwargs.get('title_id')
-        )
-        serializer.save(review=review, author=self.request.user)
+        serializer.save(review=self.get_review(), author=self.request.user)
 
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
-    # permission_classes =
+    # permission_classes = ()
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
