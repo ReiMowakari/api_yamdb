@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core import validators
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser, Group
@@ -9,24 +10,25 @@ from reviews.validations import validate_year
 def get_default_role():
     """Функция возвращает id роли user из модели Group."""
     group, created = Group.objects.get_or_create(name='user')
-    return group.pk
+    return group
 
 
 class CustomUser(AbstractUser):
     """
     Кастомная модель юзеров.
 
-    Имеет one-to-many на модель Group для разаграничения доступа юзерам.
+    Имеет кастомные поля:
+    - 'role': для управления полномочиями.
+    - 'confirmation_code': для выполнения процедуры регистрации.
+    - 'bio': информация о пользователе.
     """
 
     groups = None
-    role = models.ForeignKey(
-        Group,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        verbose_name='роль',
+    role = models.CharField(
+        choices=settings.AVAILABLE_ROLES,
+        default='user',
         max_length=16,
+        verbose_name='роль',
         help_text='Роль пользователя, определяющая доступ к ресурсам проекта'
     )
     email = models.EmailField(
@@ -47,12 +49,6 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Пользователи'
         ordering = ('username', '-date_joined')
         default_related_name = 'users'
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        if not self.role:
-            self.role = get_default_role()
-        super(CustomUser, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.username
