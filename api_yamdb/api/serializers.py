@@ -1,5 +1,7 @@
 from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.serializers import (
+    ModelSerializer, IntegerField)
 
 from api_yamdb.settings import MIN_YEAR
 from reviews.models import (
@@ -10,6 +12,7 @@ from reviews.models import (
 )
 from reviews.utils import get_current_year
 from reviews.validations import INCORRECT_TITLE_YEAR
+from .mixins import CommonFieldsCommentReviewMixin
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -76,3 +79,18 @@ class TitleViewSerializer(serializers.ModelSerializer):
             )
             return review.get('rating')
         return None
+
+
+class CommentSerializer(CommonFieldsCommentReviewMixin, ModelSerializer):
+
+    class Meta(CommonFieldsCommentReviewMixin.Meta):
+        fields = ('id', 'text', 'author', 'pub_date')
+        model = Comment
+
+
+class ReviewSerializer(CommonFieldsCommentReviewMixin, ModelSerializer):
+    score = IntegerField(required=True)
+
+    class Meta(CommonFieldsCommentReviewMixin.Meta):
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        model = Review
