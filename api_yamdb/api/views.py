@@ -3,7 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from .serializers import CommentSerializer, ReviewSerializer
 
-from reviews.models import Comment, Review, Title
+from reviews.models import Review, Title
 
 
 class CommentViewSet(ModelViewSet):
