@@ -48,4 +48,3 @@ urlpatterns = [
     path('v1/', include(router.urls)),
     path(add_version_url(''), include(router.urls)),
 ]
-

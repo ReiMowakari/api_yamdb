@@ -1,16 +1,16 @@
 from django.conf import settings
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from rest_framework.pagination import (
     PageNumberPagination, LimitOffsetPagination
 )
-from rest_framework.exceptions import MethodNotAllowed
-from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from reviews.models import (
     Category,
@@ -21,6 +21,7 @@ from reviews.models import (
 )
 from .filters import TitleFilterSet
 from .mixins import CreateDestroyListNSIMixin
+from .permissions import OnlyAdminAllowed, AccountOwnerOrManager
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -33,7 +34,6 @@ from .serializers import (
     CommentSerializer,
     ReviewSerializer,
 )
-from .permissions import OnlyAdminAllowed, AccountOwnerOrManager
 from .utils import generate_and_send_code, generate_user_token
 
 

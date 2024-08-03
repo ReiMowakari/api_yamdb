@@ -12,10 +12,11 @@ from .mixins import CommonFieldsCommentReviewMixin
 from api_yamdb.settings import MIN_YEAR
 from reviews.models import (
     Category,
+    Comment,
+    CustomUser,
     Genre,
     Review,
     Title,
-    CustomUser,
 )
 from reviews.validations import INCORRECT_TITLE_YEAR
 from reviews.utils import get_current_year
@@ -87,15 +88,19 @@ class TitleViewSerializer(serializers.ModelSerializer):
         return None
 
 
-class CommentSerializer(CommonFieldsCommentReviewMixin, ModelSerializer):
+class CommentSerializer(
+    CommonFieldsCommentReviewMixin, serializers.ModelSerializer
+):
 
     class Meta(CommonFieldsCommentReviewMixin.Meta):
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
 
 
-class ReviewSerializer(CommonFieldsCommentReviewMixin, ModelSerializer):
-    score = IntegerField(required=True)
+class ReviewSerializer(
+    CommonFieldsCommentReviewMixin, serializers.ModelSerializer
+):
+    score = serializers.IntegerField(required=True)
 
     class Meta(CommonFieldsCommentReviewMixin.Meta):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
