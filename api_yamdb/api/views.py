@@ -20,8 +20,8 @@ from reviews.models import (
     CustomUser,
 )
 from .filters import TitleFilterSet
-from .mixins import CreateDestroyListNSIMixin
-from .permissions import OnlyAdminAllowed, AdminOrReadOnly, IsOwnerOrManagerOrReadOnly
+from .mixins import CreateDestroyListNSIMixin, NoPutMethodMixin
+from .permissions import OnlyAdminAllowed, AdminOrReadOnly, IsOwnerOrManagerOrReadOnly, AdminModeratorAuthorPermission
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -167,7 +167,7 @@ class TitleViewSet(
         return TitleViewSerializer
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(NoPutMethodMixin, viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsOwnerOrManagerOrReadOnly,)
 
@@ -187,16 +187,20 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(review=self.get_review(), author=self.request.user)
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(NoPutMethodMixin, viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsOwnerOrManagerOrReadOnly,)
+    permission_classes = (AdminModeratorAuthorPermission,)
+
+    def get_title(self):
+        title = get_object_or_404(
+            Title,
+            id=self.kwargs.get('title_id'))
+        return title
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        return Review.objects.filter(title=title_id)
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         user = self.request.user
         score = self.request.data.get('score')
-        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
-        serializer.save(title=title, author=user, score=score)
+        serializer.save(title=self.get_title(), author=user, score=score)
