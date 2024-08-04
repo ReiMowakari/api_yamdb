@@ -2,6 +2,7 @@ from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 
+from api_yamdb.settings import MAX_SCORE, MIN_SCORE
 from reviews.models import CustomUser
 
 
@@ -56,3 +57,15 @@ def validate_confirmation_code(username, confirmation_code):
         raise NotFound(
             {'username': 'Такого пользователя не существует.'}
         )
+
+
+def validate_score(value):
+    """
+    Валидатор для проверки оценки отзыва от 1 до 10, включительно.
+    :param value: принимает на вход значение Score из сериализатора.
+    :return: возвращает Score или же 400 ошибку.
+    """
+    if MIN_SCORE < value < MAX_SCORE:
+        return value
+    raise serializers.ValidationError(
+        'Оценка должна быть в диапазоне от 1 до 10 влючительно.')
