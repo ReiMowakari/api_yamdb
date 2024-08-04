@@ -23,7 +23,7 @@ class CreateDestroyListNSIMixin(
     lookup_field = 'slug'
     pagination_class = LimitOffsetPagination
     permission_classes = (AdminOrReadOnly, )
-    search_field = ('name', )
+    search_fields = ('name', )
 
 
 class CommonFieldsCommentReviewMixin:
