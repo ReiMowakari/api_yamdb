@@ -104,6 +104,18 @@ class Genre(models.Model):
         return self.name[:10]
 
 
+class TitleManager(models.Manager):
+    """Менеджер для произведений."""
+    def create_object(self, **extra_fields):
+        category = extra_fields.get('category')
+        obj_category = Category.objects.get(id=category)
+        extra_fields.update(category=obj_category)
+
+        title = self.model(**extra_fields)
+        title.save(using=self._db)
+        return title
+
+
 class Title(models.Model):
     """Произведения."""
 
@@ -132,6 +144,8 @@ class Title(models.Model):
         through='GenreTitle',
         verbose_name='Жанр',
     )
+
+    objects = TitleManager()
 
     class Meta:
         verbose_name = 'произведение'  # ВП для админки
@@ -165,6 +179,19 @@ class GenreTitle(models.Model):
         default_related_name = 'genre_titles'
 
 
+class ReviewManager(models.Manager):
+    """Менеджер для отзывов."""
+
+    def create_object(self, **extra_fields):
+        author = extra_fields.get('author')
+        obj_author = CustomUser.objects.get(id=author)
+        extra_fields.update(author=obj_author)
+
+        review = self.model(**extra_fields)
+        review.save(using=self._db)
+        return review
+
+
 class Review(models.Model):
     """Модель для отзывов."""
 
@@ -182,6 +209,8 @@ class Review(models.Model):
         auto_now_add=True
     )
 
+    objects = ReviewManager()
+
     class Meta:
         verbose_name = 'отзыв'
         verbose_name_plural = 'Отзывы'
@@ -194,6 +223,12 @@ class Review(models.Model):
             models.UniqueConstraint(fields=['title', 'author'],
                                     name='unique_review_author_title'),
         ]
+
+
+class CommentManager(ReviewManager):
+    """Менеджер для комментариев."""
+
+    pass
 
 
 class Comment(models.Model):
@@ -210,6 +245,8 @@ class Comment(models.Model):
         'Дата публикации',
         auto_now_add=True
     )
+
+    objects = CommentManager()
 
     class Meta:
         verbose_name = 'комментарий'
