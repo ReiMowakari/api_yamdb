@@ -1,8 +1,7 @@
 from rest_framework import filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.serializers import (
-    StringRelatedField
-)
+from rest_framework.response import Response
+from rest_framework.status import HTTP_405_METHOD_NOT_ALLOWED
 
 from .permissions import AdminOrReadOnly
 
@@ -26,13 +25,12 @@ class CreateDestroyListNSIMixin(
     search_fields = ('name', )
 
 
-class CommonFieldsCommentReviewMixin:
+class NoPutMethodMixin:
     """
-    Общий миксин для полей для исключения кода
-    Для моделей Review и Comment.
+    Общий миксин для исключения PUT запроса.
     """
 
-    author = StringRelatedField()
-
-    class Meta:
-        read_only_fields = ('id', 'author', 'pub_date')
+    def update(self, request, *args, **kwargs):
+        if not kwargs.get('partial', False):
+            return Response(status=HTTP_405_METHOD_NOT_ALLOWED)
+        return super().update(request, *args, **kwargs)
