@@ -18,10 +18,12 @@ from reviews.models import (
     Title,
     Review,
     CustomUser,
+    Comment
 )
 from .filters import TitleFilterSet
 from .mixins import CreateDestroyListNSIMixin, NoPutMethodMixin
-from .permissions import OnlyAdminAllowed, AdminOrReadOnly, IsOwnerOrManagerOrReadOnly, AdminModeratorAuthorPermission
+from .permissions import (
+    OnlyAdminAllowed, AdminOrReadOnly, AdminModeratorAuthorPermission)
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -169,7 +171,7 @@ class TitleViewSet(
 
 class CommentViewSet(NoPutMethodMixin, viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsOwnerOrManagerOrReadOnly,)
+    permission_classes = (AdminModeratorAuthorPermission,)
 
     def get_review(self):
         """Получение объекта отзыва."""
@@ -181,7 +183,7 @@ class CommentViewSet(NoPutMethodMixin, viewsets.ModelViewSet):
         return review
 
     def get_queryset(self):
-        return self.get_review().comments
+        return Comment.objects.filter(review_id=self.get_review())
 
     def perform_create(self, serializer):
         serializer.save(review=self.get_review(), author=self.request.user)
