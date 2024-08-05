@@ -129,7 +129,6 @@ class Title(models.Model):
         verbose_name='Описание',
         blank=True
     )
-    # TODO: Перед сливом в master нужно убедиться, что есть rating
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
