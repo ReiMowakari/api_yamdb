@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core import validators
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from reviews.validations import validate_year
@@ -17,7 +17,6 @@ class CustomUser(AbstractUser):
     - 'bio': информация о пользователе.
     """
 
-    groups = None
     role = models.CharField(
         choices=settings.AVAILABLE_ROLES,
         default='user',
