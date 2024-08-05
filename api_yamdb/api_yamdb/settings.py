@@ -149,6 +149,6 @@ AVAILABLE_ROLES = [
     (USER_ROLE, 'обычный пользователь')
 ]
 
-# Constants for validation
+# Constants for validation Score for Review
 MAX_SCORE = 10
 MIN_SCORE = 1

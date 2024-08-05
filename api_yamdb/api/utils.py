@@ -23,7 +23,7 @@ def generate_and_send_code(user):
 
 
 def generate_user_token(user):
-    '''Создает access- jwt токен для пользователя.'''
+    """Создает access- jwt токен для пользователя."""
     access = AccessToken.for_user(user)
     return {
         'access': str(access),
