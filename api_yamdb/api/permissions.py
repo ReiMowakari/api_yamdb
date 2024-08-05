@@ -16,27 +16,6 @@ class OnlyAdminAllowed(BasePermission):
         )
 
 
-class IsOwnerOrManagerOrReadOnly(BasePermission):
-    """
-    Пермишен включает в себя доступ для:
-
-    - всех пользователей, если метод запроса безопасный
-    - админа, модератора, суперюзера или владельца объекта для остальных
-    методов.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-        return (
-            request.user.is_authenticated
-            and (
-                obj.author == request.user
-                or request.user.role in settings.MANAGER_ROLES
-            )
-        )
-
-
 class AdminOrReadOnly(BasePermission):
     """
     Пермишен для категорий, жанров, произведений.
@@ -57,6 +36,12 @@ class AdminOrReadOnly(BasePermission):
 
 
 class AdminModeratorAuthorPermission(BasePermission):
+    """
+    Пермишен для отзывов и комментариев.
+
+    Безопасные методы доступны любому пользователю. Остальные методы только для
+    Админа, Модератора и Автора
+    """
     def has_permission(self, request, view):
         return (
             request.method in SAFE_METHODS

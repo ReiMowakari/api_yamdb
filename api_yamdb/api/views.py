@@ -68,7 +68,9 @@ class UserAPIView(APIView):
         )
 
 
-class AdminUserViewSet(viewsets.ModelViewSet):
+class AdminUserViewSet(
+    NoPutMethodMixin, viewsets.ModelViewSet
+):
     """
     Апи для пользователей с ролью 'админ'.
 
@@ -83,11 +85,6 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            raise MethodNotAllowed(method=request.method)
-        return super().update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -155,6 +152,7 @@ class GenreViewSet(
 
 
 class TitleViewSet(
+    NoPutMethodMixin,
     viewsets.ModelViewSet
 ):
     filter_backends = (DjangoFilterBackend, )
@@ -169,7 +167,9 @@ class TitleViewSet(
         return TitleViewSerializer
 
 
-class CommentViewSet(NoPutMethodMixin, viewsets.ModelViewSet):
+class CommentViewSet(
+    NoPutMethodMixin, viewsets.ModelViewSet
+):
     serializer_class = CommentSerializer
     permission_classes = (AdminModeratorAuthorPermission,)
 
@@ -189,7 +189,9 @@ class CommentViewSet(NoPutMethodMixin, viewsets.ModelViewSet):
         serializer.save(review=self.get_review(), author=self.request.user)
 
 
-class ReviewViewSet(NoPutMethodMixin, viewsets.ModelViewSet):
+class ReviewViewSet(
+    NoPutMethodMixin, viewsets.ModelViewSet
+):
     serializer_class = ReviewSerializer
     permission_classes = (AdminModeratorAuthorPermission,)
 
