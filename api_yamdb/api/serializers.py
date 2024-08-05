@@ -80,7 +80,7 @@ class TitleViewSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         """Подсчет рейтинга произведения."""
-        if not obj.reviews.count():
+        if obj.reviews.count():
             review = Review.objects.filter(title=obj).aggregate(
                 rating=Avg('score')
             )
