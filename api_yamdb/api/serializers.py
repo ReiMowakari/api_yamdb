@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.core.validators import RegexValidator
 
 from .validators import (
     validate_username_allowed,
@@ -134,10 +135,19 @@ class SelfUserRegistrationSerializer(serializers.ModelSerializer):
     """
 
     username = serializers.CharField(
-        required=True
+        required=True,
+        max_length=150,
+        validators=[
+            RegexValidator(
+                regex=settings.USERNAME_PATTERN,
+                message='Username может содержать только цифры, буквы и'
+                ' знаки: ./@/+/-/_'
+            ),
+        ]
     )
     email = serializers.EmailField(
-        required=True
+        required=True,
+        max_length=254
     )
 
     class Meta:
@@ -158,10 +168,19 @@ class AdminUserSerializer(SelfUserRegistrationSerializer):
     """Сериализатор для работы с запросами от пользователей с ролью админ."""
 
     username = serializers.CharField(
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())],
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            RegexValidator(
+                regex=settings.USERNAME_PATTERN,
+                message='Username может содержать только цифры, буквы и'
+                ' знаки: ./@/+/-/_'
+            )
+        ],
+        max_length=150
     )
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=CustomUser.objects.all())],
+        max_length=254
     )
 
     role = serializers.ChoiceField(
@@ -181,12 +200,20 @@ class GetOrPatchUserSerializer(serializers.ModelSerializer):
     """
 
     username = serializers.CharField(
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-        required=False
+        validators=[
+            UniqueValidator(queryset=CustomUser.objects.all()),
+            RegexValidator(
+                regex=settings.USERNAME_PATTERN,
+                message='Username может содержать только цифры, буквы и'
+                ' знаки: ./@/+/-/_'
+            )
+        ],
+        max_length=150
     )
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-        required=False
+        required=False,
+        max_length=254
     )
 
     class Meta:

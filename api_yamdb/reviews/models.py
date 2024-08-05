@@ -7,12 +7,6 @@ from django.db import models
 from reviews.validations import validate_year
 
 
-def get_default_role():
-    """Функция возвращает id роли user из модели Group."""
-    group, created = Group.objects.get_or_create(name='user')
-    return group
-
-
 class CustomUser(AbstractUser):
     """
     Кастомная модель юзеров.
