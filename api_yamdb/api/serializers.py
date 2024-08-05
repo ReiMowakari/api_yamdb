@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db.models import Avg
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
+from django.core.validators import RegexValidator
 
 from .mixins import (
     CommonUserSerializerFieldsMixin,
@@ -14,7 +14,6 @@ from .validators import (
     validate_confirmation_code,
     validate_score,
 )
-from api_yamdb.settings import MIN_YEAR
 from reviews.models import (
     Category,
     Comment,
@@ -68,7 +67,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     def validate_year(self, year):
         """Валидация для года."""
-        if not (MIN_YEAR <= year <= get_current_year()):
+        if not (settings.MIN_YEAR <= year <= get_current_year()):
             raise serializers.ValidationError(INCORRECT_TITLE_YEAR)
         return year
 
@@ -149,10 +148,19 @@ class SelfUserRegistrationSerializer(serializers.ModelSerializer):
     """
 
     username = serializers.CharField(
-        required=True
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=settings.USERNAME_PATTERN,
+                message='Username может содержать только цифры, буквы и'
+                ' знаки: ./@/+/-/_'
+            )
+        ],
+        max_length=150
     )
     email = serializers.EmailField(
-        required=True
+        required=True,
+        max_length=254
     )
 
     class Meta:
@@ -172,13 +180,6 @@ class AdminUserSerializer(
 ):
     """Сериализатор для работы с запросами от пользователей с ролью админ."""
 
-    username = serializers.CharField(
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-    )
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-    )
-
     role = serializers.ChoiceField(
         choices=settings.AVAILABLE_ROLES, required=False
     )
@@ -190,15 +191,6 @@ class GetOrPatchUserSerializer(
     """
     Сериализатор для работы с запросами на изменение профиля пользователя.
     """
-
-    username = serializers.CharField(
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-        required=False
-    )
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())],
-        required=False
-    )
 
     class Meta(CommonUserSerializerFieldsMixin.Meta):
         read_only_fields = ('role',)

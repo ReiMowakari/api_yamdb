@@ -152,3 +152,5 @@ AVAILABLE_ROLES = [
 # Constants for validation Score for Review
 MAX_SCORE = 10
 MIN_SCORE = 1
+
+USERNAME_PATTERN = r'^[\w.@+-]+$'

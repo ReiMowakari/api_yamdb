@@ -21,7 +21,6 @@ class CustomUser(AbstractUser):
     - 'bio': информация о пользователе.
     """
 
-    groups = None
     role = models.CharField(
         choices=settings.AVAILABLE_ROLES,
         default='user',
