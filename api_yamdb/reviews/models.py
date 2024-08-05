@@ -4,6 +4,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from api_yamdb.settings import (
+    MIN_SCORE,
+    MAX_SCORE,
+)
 from reviews.validations import validate_year
 
 
@@ -124,7 +128,6 @@ class Title(models.Model):
         verbose_name='Описание',
         blank=True
     )
-    # TODO: Перед сливом в master нужно убедиться, что есть rating
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
@@ -190,13 +193,27 @@ class Review(models.Model):
 
     text = models.TextField('Содержимое отзыва')
     author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
+    )
     score = models.PositiveSmallIntegerField(
-        'Оценка', default=1, validators=[
-            MinValueValidator(1, message='Оценка не может быть меньше 1'),
-            MaxValueValidator(10, message='Оценка не может быть больше 10')])
+        'Оценка',
+        default=1,
+        validators=[
+            MinValueValidator(
+                MIN_SCORE,
+                message='Оценка не может быть меньше 1'),
+            MaxValueValidator(
+                MAX_SCORE,
+                message='Оценка не может быть больше 10')
+        ]
+    )
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, verbose_name='Произведение')
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
+    )
     pub_date = models.DateTimeField(
         'Дата публикации',
         auto_now_add=True
@@ -229,7 +246,10 @@ class Comment(models.Model):
 
     text = models.TextField('Содержимое комментария')
     author = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, verbose_name='Автор')
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
+    )
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,

@@ -3,11 +3,16 @@ from django.db.models import Avg
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 
+from .mixins import (
+    CommonUserSerializerFieldsMixin,
+    CommonReviewCommentSerializerMixin,
+    CommonCategoryGenreSerializerMixin,
+)
 from .validators import (
     validate_username_allowed,
     validate_data_unique_together,
     validate_confirmation_code,
-    validate_score
+    validate_score,
 )
 from reviews.models import (
     Category,
@@ -21,24 +26,27 @@ from reviews.validations import INCORRECT_TITLE_YEAR
 from reviews.utils import get_current_year
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(
+    CommonCategoryGenreSerializerMixin, serializers.ModelSerializer
+):
     """Сериалайзер для категорий."""
 
-    class Meta:
+    class Meta(CommonCategoryGenreSerializerMixin.Meta):
         model = Category
-        fields = ('name', 'slug',)
 
 
-class GenreSerializer(serializers.ModelSerializer):
+class GenreSerializer(
+    CommonCategoryGenreSerializerMixin, serializers.ModelSerializer
+):
     """Сериалайзер для жанров."""
 
-    class Meta:
+    class Meta(CommonCategoryGenreSerializerMixin.Meta):
         model = Genre
-        fields = ('name', 'slug',)
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
     """Сериалайзер произведений для методов на запись."""
+
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Genre.objects.all(),
@@ -66,6 +74,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 class TitleViewSerializer(serializers.ModelSerializer):
     """Сериалайзер произведений для методов на чтение."""
+
     genre = GenreSerializer(many=True, required=False,)
     category = CategorySerializer(required=True,)
     rating = serializers.SerializerMethodField()
@@ -87,18 +96,24 @@ class TitleViewSerializer(serializers.ModelSerializer):
         return None
 
 
-class CommentSerializer(serializers.ModelSerializer):
+class CommentSerializer(
+    CommonReviewCommentSerializerMixin, serializers.ModelSerializer
+):
+    """Сериалайзер для комментариев."""
+
     author = serializers.StringRelatedField(
         source='author.username'
     )
 
-    class Meta:
-        fields = ('id', 'text', 'author', 'pub_date')
+    class Meta(CommonReviewCommentSerializerMixin.Meta):
         model = Comment
-        read_only_fields = ('id', 'author', 'pub_date')
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+class ReviewSerializer(
+    CommonReviewCommentSerializerMixin, serializers.ModelSerializer
+):
+    """Сериалайзер для Отзывов."""
+
     score = serializers.IntegerField(required=True)
     author = serializers.StringRelatedField(
         source='author.username'
@@ -116,13 +131,13 @@ class ReviewSerializer(serializers.ModelSerializer):
         if Review.objects.filter(title=title, author=author).exists():
             raise serializers.ValidationError(
                 'Такой отзыв уже существует.')
+        # Проверка на соответствие оценки.
         validate_score(int(score))
         return super().create(validated_data)
 
-    class Meta:
+    class Meta(CommonReviewCommentSerializerMixin.Meta):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
-        read_only_fields = ('id', 'author', 'pub_date')
 
 
 class SelfUserRegistrationSerializer(serializers.ModelSerializer):
@@ -155,37 +170,29 @@ class SelfUserRegistrationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         username = data.get('username')
         email = data.get('email')
-
         validate_username_allowed(username)
         validate_data_unique_together(username, email)
-
         return data
 
 
-class AdminUserSerializer(SelfUserRegistrationSerializer):
+class AdminUserSerializer(
+    CommonUserSerializerFieldsMixin, SelfUserRegistrationSerializer
+):
     """Сериализатор для работы с запросами от пользователей с ролью админ."""
 
     role = serializers.ChoiceField(
         choices=settings.AVAILABLE_ROLES, required=False
     )
 
-    class Meta:
-        model = CustomUser
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        )
 
-
-class GetOrPatchUserSerializer(serializers.ModelSerializer):
+class GetOrPatchUserSerializer(
+    CommonUserSerializerFieldsMixin, serializers.ModelSerializer
+):
     """
     Сериализатор для работы с запросами на изменение профиля пользователя.
     """
 
-    class Meta:
-        model = CustomUser
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        )
+    class Meta(CommonUserSerializerFieldsMixin.Meta):
         read_only_fields = ('role',)
 
 
@@ -200,7 +207,6 @@ class ObtainTokenSerializer(serializers.ModelSerializer):
     def validate(self, data):
         username = data.get('username')
         confirmation_code = data.get('confirmation_code')
-
+        # Проверка confirmation_code для пользователя.
         validate_confirmation_code(username, confirmation_code)
-
         return data
