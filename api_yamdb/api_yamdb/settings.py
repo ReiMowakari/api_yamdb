@@ -148,3 +148,7 @@ AVAILABLE_ROLES = [
     (MODERATOR_ROLE, 'модератор'),
     (USER_ROLE, 'обычный пользователь')
 ]
+
+# Constants for validation
+MAX_SCORE = 10
+MIN_SCORE = 1

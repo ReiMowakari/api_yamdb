@@ -6,9 +6,9 @@ from rest_framework.validators import UniqueValidator
 from .validators import (
     validate_username_allowed,
     validate_data_unique_together,
-    validate_confirmation_code
+    validate_confirmation_code,
+    validate_score
 )
-from .mixins import CommonFieldsCommentReviewMixin
 from api_yamdb.settings import MIN_YEAR
 from reviews.models import (
     Category,
@@ -88,23 +88,42 @@ class TitleViewSerializer(serializers.ModelSerializer):
         return None
 
 
-class CommentSerializer(
-    CommonFieldsCommentReviewMixin, serializers.ModelSerializer
-):
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(
+        source='author.username'
+    )
 
-    class Meta(CommonFieldsCommentReviewMixin.Meta):
+    class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
+        read_only_fields = ('id', 'author', 'pub_date')
 
 
-class ReviewSerializer(
-    CommonFieldsCommentReviewMixin, serializers.ModelSerializer
-):
+class ReviewSerializer(serializers.ModelSerializer):
     score = serializers.IntegerField(required=True)
+    author = serializers.StringRelatedField(
+        source='author.username'
+    )
 
-    class Meta(CommonFieldsCommentReviewMixin.Meta):
+    def create(self, validated_data):
+        """
+        Валидация при создании объекта отзыва.
+        - Проверка на уже существующий отзыв.
+        - Проверка на соответствие оценки.
+        """
+        author = validated_data.get('author')
+        title = validated_data.get('title')
+        score = validated_data.get('score')
+        if Review.objects.filter(title=title, author=author).exists():
+            raise serializers.ValidationError(
+                'Такой отзыв уже существует.')
+        validate_score(int(score))
+        return super().create(validated_data)
+
+    class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
+        read_only_fields = ('id', 'author', 'pub_date')
 
 
 class SelfUserRegistrationSerializer(serializers.ModelSerializer):
