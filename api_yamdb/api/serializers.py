@@ -171,7 +171,7 @@ class AdminUserSerializer(
     """Сериализатор для работы с запросами от пользователей с ролью админ."""
 
     role = serializers.ChoiceField(
-        choices=settings.AVAILABLE_ROLES, required=False
+        choices=CustomUser.AVAILABLE_ROLES, required=False
     )
 
 
