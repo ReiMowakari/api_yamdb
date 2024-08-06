@@ -10,7 +10,6 @@ class TitleFilterSet(rest_framework.FilterSet):
     name = rest_framework.CharFilter(
         field_name='name', lookup_expr='icontains'
     )
-    year = rest_framework.NumberFilter(field_name='year')
 
     class Meta:
         model = Title

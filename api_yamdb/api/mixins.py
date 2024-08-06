@@ -6,6 +6,7 @@ from rest_framework.status import HTTP_405_METHOD_NOT_ALLOWED
 from .permissions import AdminOrReadOnly
 from reviews.models import CustomUser
 
+
 class CreateDestroyListNSIMixin(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
