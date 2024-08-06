@@ -110,10 +110,6 @@ ENV/
 env.bak/
 venv.bak/
 
-# Emails
-
-sent_emails/
-
 # Spyder project settings
 .spyderproject
 .spyproject
