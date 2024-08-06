@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
@@ -89,7 +88,7 @@ class AdminUserViewSet(
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        if user.role == settings.ADMIN_ROLE:
+        if user.is_admin:
             user.is_staff = True
             user.save()
         return Response(

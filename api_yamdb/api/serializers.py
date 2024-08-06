@@ -22,6 +22,7 @@ from reviews.models import (
     Review,
     Title,
 )
+from reviews.models import CustomUser
 from reviews.validations import INCORRECT_TITLE_YEAR
 from reviews.utils import get_current_year
 
@@ -181,7 +182,7 @@ class AdminUserSerializer(
     """Сериализатор для работы с запросами от пользователей с ролью админ."""
 
     role = serializers.ChoiceField(
-        choices=settings.AVAILABLE_ROLES, required=False
+        choices=CustomUser.AVAILABLE_ROLES, required=False
     )
 
 

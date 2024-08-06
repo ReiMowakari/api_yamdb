@@ -1,4 +1,3 @@
-from django.conf import settings
 from rest_framework.permissions import (
     BasePermission, SAFE_METHODS)
 
@@ -13,7 +12,7 @@ class OnlyAdminAllowed(BasePermission):
         return (
             request.user.is_authenticated
             and (
-                request.user.role == settings.ADMIN_ROLE
+                request.user.is_admin
                 or request.user.is_superuser is True
             )
         )
@@ -32,7 +31,7 @@ class AdminOrReadOnly(BasePermission):
             return True
         return (
             request.user.is_authenticated
-            and request.user.role == settings.ADMIN_ROLE
+            and request.user.is_admin
             or request.user.is_superuser
         )
 
@@ -55,5 +54,6 @@ class AdminModeratorAuthorPermission(BasePermission):
         return (
             request.method in SAFE_METHODS
             or obj.author == request.user
-            or request.user.role in settings.MANAGER_ROLES
+            or request.user.is_manager
+            or request.user.is_superuser
         )
