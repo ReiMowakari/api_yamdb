@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db.models import Avg
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 
@@ -77,7 +76,7 @@ class TitleViewSerializer(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True, required=False,)
     category = CategorySerializer(required=True,)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Title
@@ -85,15 +84,6 @@ class TitleViewSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category',
         )
         read_only_fields = fields
-
-    def get_rating(self, obj):
-        """Подсчет рейтинга произведения."""
-        if obj.reviews.count():
-            review = Review.objects.filter(title=obj).aggregate(
-                rating=Avg('score')
-            )
-            return review.get('rating')
-        return None
 
 
 class CommentSerializer(

@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -158,7 +159,9 @@ class TitleViewSet(
     filterset_class = TitleFilterSet
     pagination_class = LimitOffsetPagination
     permission_classes = (AdminOrReadOnly,)
-    queryset = Title.objects.all()
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score'))
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):
