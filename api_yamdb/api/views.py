@@ -1,4 +1,4 @@
-from django.conf import settings
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
@@ -89,7 +89,7 @@ class AdminUserViewSet(
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        if user.role == settings.ADMIN_ROLE:
+        if user.is_admin:
             user.is_staff = True
             user.save()
         return Response(
@@ -158,7 +158,9 @@ class TitleViewSet(
     filterset_class = TitleFilterSet
     pagination_class = LimitOffsetPagination
     permission_classes = (AdminOrReadOnly,)
-    queryset = Title.objects.all()
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score'))
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH'):

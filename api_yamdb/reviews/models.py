@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core import validators
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
@@ -21,8 +20,20 @@ class CustomUser(AbstractUser):
     - 'bio': информация о пользователе.
     """
 
+    ADMIN_ROLE = 'admin'
+    MODERATOR_ROLE = 'moderator'
+    USER_ROLE = 'user'
+
+    MANAGER_ROLES = (ADMIN_ROLE, MODERATOR_ROLE)
+
+    AVAILABLE_ROLES = [
+        (ADMIN_ROLE, 'админ'),
+        (MODERATOR_ROLE, 'модератор'),
+        (USER_ROLE, 'обычный пользователь')
+    ]
+
     role = models.CharField(
-        choices=settings.AVAILABLE_ROLES,
+        choices=AVAILABLE_ROLES,
         default='user',
         max_length=16,
         verbose_name='роль',
@@ -49,6 +60,14 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN_ROLE
+
+    @property
+    def is_manager(self):
+        return self.role in self.MANAGER_ROLES
 
 
 class Category(models.Model):
